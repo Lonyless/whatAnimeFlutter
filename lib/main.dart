@@ -29,32 +29,30 @@ class BuildListView extends StatefulWidget {
 }
 
 class _BuildListViewState extends State<BuildListView> {
+  var results = new List<Welcome>();
 
-  var results = new List<Results>();
-
-  getPokemon() {
-    API.getPokemon().then((value) {
+  getCatFact() {
+    API.getFacts().then((value) {
       setState(() {
         Map<String, dynamic> map = json.decode(value.body);
         Iterable list = map["results"];
 
-        results = list.map((results) => Results.fromJson(results)).toList();
-        
+        results = list.map((results) => Welcome.fromJson(results)).toList();
       });
     });
   }
 
   _BuildListViewState() {
-    getPokemon();
+    getCatFact();
   }
 
-  listaPokemon() {
+  listaCatFact() {
     return ListView.builder(
         itemCount: results.length,
         itemBuilder: (context, index) {
           return ListTile(
             title: Text(
-             results[index].name,
+              results[index].text,
               style: TextStyle(fontSize: 25),
             ),
           );
@@ -63,8 +61,8 @@ class _BuildListViewState extends State<BuildListView> {
 
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Pokemon")),
-      body: listaPokemon(),
+      appBar: AppBar(title: Text("Cat Facts")),
+      body: listaCatFact(),
     );
   }
 }

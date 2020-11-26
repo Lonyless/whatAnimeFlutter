@@ -1,32 +1,61 @@
-class Model {
-  int count;
-  String next;
-  String previous;
-  List<Results> results;
+// To parse this JSON data, do
+//
+//     final welcome = welcomeFromJson(jsonString);
 
-  Model({this.count, this.next, this.previous, this.results});
+import 'dart:convert';
 
-  Model.fromJson(Map<String, dynamic> json) {
-    count = json['count'];
-    next = json['next'];
-    previous = json['previous'];
-    if (json['results'] != null) {
-      results = new List<Results>();
-      json['results'].forEach((v) {
-        results.add(new Results.fromJson(v));
-      });
-    }
-  }
-}
+Welcome welcomeFromJson(String str) => Welcome.fromJson(json.decode(str));
 
-class Results {
-  String name;
-  String url;
+String welcomeToJson(Welcome data) => json.encode(data.toJson());
 
-  Results({this.name, this.url});
+class Welcome {
+  Welcome({
+    this.used,
+    this.source,
+    this.type,
+    this.deleted,
+    this.id,
+    this.v,
+    this.text,
+    this.updatedAt,
+    this.createdAt,
+    this.user,
+  });
 
-  Results.fromJson(Map<String, dynamic> json) {
-    name = json['name'];
-    url = json['url'];
-  }
+  bool used;
+  String source;
+  String type;
+  bool deleted;
+  String id;
+  int v;
+  String text;
+  DateTime updatedAt;
+  DateTime createdAt;
+  String user;
+
+  factory Welcome.fromJson(Map<String, dynamic> json) => Welcome(
+        used: json["used"],
+        source: json["source"],
+        type: json["type"],
+        deleted: json["deleted"],
+        id: json["_id"],
+        v: json["__v"],
+        text: json["text"],
+        updatedAt: DateTime.parse(json["updatedAt"]),
+        createdAt: DateTime.parse(json["createdAt"]),
+        user: json["user"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "used": used,
+        "source": source,
+        "type": type,
+        "deleted": deleted,
+        "_id": id,
+        "__v": v,
+        "text": text,
+        "updatedAt": updatedAt.toIso8601String(),
+        "createdAt": createdAt.toIso8601String(),
+        "user": user,
+      };
 }
