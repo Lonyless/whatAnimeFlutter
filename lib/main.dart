@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Temos que Pegar',
+      title: 'Everyday a fact',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -29,15 +29,13 @@ class BuildListView extends StatefulWidget {
 }
 
 class _BuildListViewState extends State<BuildListView> {
-  var results = new List<Welcome>();
+  String results;
 
   getCatFact() {
-    API.getFacts().then((value) {
+    API.getRandomFact().then((value) {
       setState(() {
-        Map<String, dynamic> map = json.decode(value.body);
-        Iterable list = map["results"];
-
-        results = list.map((results) => Welcome.fromJson(results)).toList();
+        var all = json.decode(value.body);
+        results = all['text'];
       });
     });
   }
@@ -47,16 +45,7 @@ class _BuildListViewState extends State<BuildListView> {
   }
 
   listaCatFact() {
-    return ListView.builder(
-        itemCount: results.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(
-              results[index].text,
-              style: TextStyle(fontSize: 25),
-            ),
-          );
-        });
+    return Text(results);
   }
 
   Widget build(BuildContext context) {
