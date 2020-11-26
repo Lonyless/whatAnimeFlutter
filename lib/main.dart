@@ -31,6 +31,16 @@ class BuildListView extends StatefulWidget {
 class _BuildListViewState extends State<BuildListView> {
   String results = "";
 
+  getCatFact() {
+    API.getRandomFact().then((value) {
+      setState(() {
+        var all = json.decode(value.body);
+        results = all['text'];
+      });
+    });
+  }
+
+  /*
   Future<String> getJSONData() async {
     var response = await http
         .get(Uri.encodeFull("https://cat-fact.herokuapp.com/facts/random"));
@@ -40,23 +50,22 @@ class _BuildListViewState extends State<BuildListView> {
     });
     return "Dados obtidos com sucesso";
   }
-
-  /*
-  getCatFact() {
-    API.getRandomFact().then((value) {
-      setState(() {
-        var all = json.decode(value.body);
-        results = all['text'];
-      });
-    });
-  }*/
+  */
 
   _BuildListViewState() {
-    getJSONData();
+    getCatFact();
   }
 
   listaCatFact() {
-    return Text(results);
+    return Column(
+      children: [
+        Text(results),
+        FlatButton(
+          child: Text("press me for a cat fact"),
+          onPressed: () => {getCatFact()},
+        )
+      ],
+    );
   }
 
   Widget build(BuildContext context) {
