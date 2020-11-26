@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
 import 'api.dart';
 import 'model.dart';
 
@@ -29,8 +29,19 @@ class BuildListView extends StatefulWidget {
 }
 
 class _BuildListViewState extends State<BuildListView> {
-  String results;
+  String results = "";
 
+  Future<String> getJSONData() async {
+    var response = await http
+        .get(Uri.encodeFull("https://cat-fact.herokuapp.com/facts/random"));
+    setState(() {
+      // otem os dados JSON
+      results = json.decode(response.body)['text'];
+    });
+    return "Dados obtidos com sucesso";
+  }
+
+  /*
   getCatFact() {
     API.getRandomFact().then((value) {
       setState(() {
@@ -38,10 +49,10 @@ class _BuildListViewState extends State<BuildListView> {
         results = all['text'];
       });
     });
-  }
+  }*/
 
   _BuildListViewState() {
-    getCatFact();
+    getJSONData();
   }
 
   listaCatFact() {
