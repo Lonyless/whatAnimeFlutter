@@ -30,12 +30,23 @@ class BuildListView extends StatefulWidget {
 
 class _BuildListViewState extends State<BuildListView> {
   String results = "";
+  var img = new Image.network(
+      'https://media.tenor.com/images/47f855960d5dc83774d7b3b428964c93/tenor.gif');
 
   getCatFact() {
     API.getRandomFact().then((value) {
       setState(() {
         var all = json.decode(value.body);
         results = all['text'];
+      });
+    });
+  }
+
+  getCatImage() {
+    API.getRandomPicture().then((value) {
+      setState(() {
+        var all = json.decode(value.body);
+        img = new Image.network(all[0]['url']);
       });
     });
   }
@@ -54,16 +65,26 @@ class _BuildListViewState extends State<BuildListView> {
 
   _BuildListViewState() {
     getCatFact();
+    getCatImage();
   }
 
-  listaCatFact() {
+  listaCat() {
     return Column(
       children: [
         Text(results),
         FlatButton(
           child: Text("press me for a cat fact"),
           onPressed: () => {getCatFact()},
-        )
+        ),
+        Container(
+          height: 300,
+          width: 300,
+          child: img,
+        ),
+        FlatButton(
+          child: Text("press me for a cat pic"),
+          onPressed: () => {getCatImage()},
+        ),
       ],
     );
   }
@@ -71,7 +92,7 @@ class _BuildListViewState extends State<BuildListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Cat Facts")),
-      body: listaCatFact(),
+      body: listaCat(),
     );
   }
 }
