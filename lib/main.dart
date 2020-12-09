@@ -1,12 +1,14 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'model.dart';
+import 'package:api/conn.dart';
 
 import 'package:dio/dio.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(MyApp());
@@ -25,6 +27,52 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+class Dados extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+        title: 'Animes',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: Scaffold(
+            appBar: AppBar(
+                title: Text("Dados sobre o Anime",
+                    style: TextStyle(fontSize: 25))),
+            body: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Nome original do Anime: \n" +
+                        listRecente['docs'][0]['anime'] +
+                        "\n",
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  Text(
+                    "Nome em inglês: \n" +
+                        listRecente['docs'][0]['title_english'] +
+                        "\n",
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  Text(
+                    "Episodio: " +
+                        listRecente['docs'][0]['episode'].toString() +
+                        "\n",
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  Text(
+                    "É adulto?: " +
+                        listRecente['docs'][0]['is_adult'].toString(),
+                    style: TextStyle(fontSize: 20),
+                  )
+                ])));
+  }
+}
+
+var listRecente;
 
 class BuildListView extends StatefulWidget {
   @override
@@ -62,34 +110,35 @@ class _BuildListViewState extends State<BuildListView> {
             responseType: ResponseType.json // or ResponseType.JSON
             ));
 
-    var result = Map<String, dynamic>.from(response.data);
+    listRecente = Map<String, dynamic>.from(response.data);
 
-    print(result['docs']);
+    Conn db = Conn();
 
-    print(result['docs'][0]['anime']);
+    db.getCount().then((value) => {
+          db.insertRecente(new Recente(value, listRecente['docs'][0]['anime'])),
+          listar()
+        });
+
+    //db.deleteAll();
+
+    Navigator.push(
+        context, MaterialPageRoute(builder: (BuildContext context) => Dados()));
+
+    //print(listRecente['docs']);
+
+    //print(listRecente['docs'][0]['anime']);
   }
 
-  pickAnime() {
+  pickAnime(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          padding: EdgeInsets.only(top: 50, bottom: 10),
+          padding: EdgeInsets.only(top: 30, bottom: 30),
           child: Text(
-            "Escolha uma foto de anime!",
+            "Escolha uma foto de anime e aperte em consultar! xD",
             //  textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 33),
-          ),
-        ),
-        Container(
-          margin: EdgeInsets.all(20),
-          child: RaisedButton(
-            color: Colors.lightBlue[300],
-            child: Text(
-              "Selecionar Foto",
-              style: TextStyle(fontSize: 20),
-            ),
-            onPressed: () => {_imgFromGallery()},
+            style: GoogleFonts.shadowsIntoLight(fontSize: 40),
           ),
         ),
         Container(
@@ -105,21 +154,94 @@ class _BuildListViewState extends State<BuildListView> {
                   : null,
             )),
         Container(
-          margin: EdgeInsets.all(30),
-          child: RaisedButton(
+          width: 390,
+          margin: EdgeInsets.only(top: 30, bottom: 10),
+          child: CupertinoButton(
+            borderRadius: BorderRadius.circular(25),
+            color: Colors.lightBlue[300],
+            child: Text(
+              "Selecionar Foto",
+              style: TextStyle(fontSize: 30),
+            ),
+            onPressed: () => {_imgFromGallery()},
+          ),
+        ),
+        Container(
+          width: 390,
+          margin: EdgeInsets.only(left: 10, right: 10),
+          child: CupertinoButton(
+            borderRadius: BorderRadius.circular(25),
             color: Colors.lightGreen[500],
-            child: Text("Enviar", style: TextStyle(fontSize: 30)),
+            child: Text("Consultar", style: TextStyle(fontSize: 30)),
             onPressed: () => {sendFile(_image)},
           ),
-        )
+        ),
       ],
     );
   }
 
+  @override
+  void initState() {
+    super.initState();
+
+    listar();
+  }
+
+  Conn db = Conn();
+  List<Recente> recente = List<Recente>();
+
+  listar() {
+    db.getRecentes().then((lista) {
+      setState(() {
+        recente = lista;
+      });
+    });
+  }
+
   Widget build(BuildContext context) {
+    Widget recentes = Stack(
+      children: [
+        Container(
+          margin: EdgeInsets.only(left: 30),
+          child: Text(
+            "Animes pesquisados recentemente",
+            style: TextStyle(fontSize: 30),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        
+        ListView.builder(
+          padding: EdgeInsets.only(top: 100, left: 30, right: 30),
+          itemCount: recente.length,
+          itemBuilder: (context, index) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Container(
+                    padding: EdgeInsets.only(right: 90),
+                    child: Text(recente[index].nome,
+                        style: TextStyle(fontSize: 20))),
+                Divider(
+                  thickness: 2.3,
+                  color: Colors.grey[400],
+                  height: 40,
+                ),
+              ],
+            );
+          },
+        )
+      ],
+    );
+
     return Scaffold(
         appBar: AppBar(
             title: Text("Anime Finder ^-^", style: TextStyle(fontSize: 25))),
-        body: pickAnime());
+        body: PageView(
+          children: [
+            pickAnime(context),
+            recentes,
+          ],
+        ));
   }
 }
